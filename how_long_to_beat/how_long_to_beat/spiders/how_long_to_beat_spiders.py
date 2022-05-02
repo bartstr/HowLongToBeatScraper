@@ -3,6 +3,9 @@ from how_long_to_beat.items import HowLongToBeatItem
 import re
 from scrapy.http import FormRequest, Request
 
+from how_long_to_beat.utils.completion_time_utils import fraction_normalisation
+from how_long_to_beat.utils.date_utils import release_date_normalisation
+
 
 class HowLongToBeat(scrapy.Spider):
     name = 'hltb_spider'
@@ -62,7 +65,27 @@ class HowLongToBeat(scrapy.Spider):
         item['developer'] = developer_raw.strip()
         publisher_raw = response.xpath('//div[contains(@class, "profile_info")]/strong[contains(text(), "Publisher")]/following-sibling::text()[2]').get()
         item['publisher'] = publisher_raw.strip()
-        print(item)
-        # https://www.youtube.com/watch?v=kkWhQKtxT2I&ab_channel=buildwithpython
+        release_dates_raw = response.xpath('//div[contains(@class, "profile_info")]/strong[contains(text(), "NA") or contains(text(), "EU") or contains(text(), "JP")]/following-sibling::text()[2]').getall()
+        release_dates = []
+        for raw_date in release_dates_raw:
+            clean_date = raw_date.strip()
+            release_dates.append(clean_date)
+        item['release_date'] = release_date_normalisation(release_dates).__str__()
+        rating_raw = response.xpath('//div[@class="profile_details"]//li[contains(text(), "Rating")]').get()
+        rating = re.findall('\d+', rating_raw)
+        item['rating'] = int(rating[0])
+        main_story_raw = response.xpath('//li[@class="short time_100"]/*[contains(text(), "Main Story")]/following-sibling::div/text()').get()
+        item['main_story'] = fraction_normalisation(main_story_raw)
+        main_plus_extras_raw = response.xpath('//li[@class="short time_100"]/*[contains(text(), "Main + Extras")]/following-sibling::div/text()').get()
+        item['main_plus_extras'] = fraction_normalisation(main_plus_extras_raw)
+        completionist_raw = response.xpath(
+            '//li[@class="short time_100"]/*[contains(text(), "Completionist")]/following-sibling::div/text()').get()
+        item['completionist'] = fraction_normalisation(completionist_raw)
+        all_styles_raw = response.xpath(
+            '//li[@class="short time_100"]/*[contains(text(), "All Styles")]/following-sibling::div/text()').get()
+        item['all_styles'] = fraction_normalisation(all_styles_raw)
+        yield item
+
+
 
 

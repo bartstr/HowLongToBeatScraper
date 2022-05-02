@@ -10,34 +10,33 @@ def check_if_date_is_fully_valid(string):
 
 
 def convert_string_date_to_date_object(string):
-    return datetime.strptime(string, '%B %d, %Y').date()
+    try:
+        return datetime.strptime(string, '%B %d, %Y').date()
+    except ValueError:
+        return None
 
 
-def compare_full_dates(*args):
-    main_l = []
-    for x in args:
-        d = convert_string_date_to_date_object(x)
-        main_l.append(d)
-    main_l.sort()
-    return main_l[0]
-
-
-def compare_year_only_dates(*args):
-    years = list(args)
-    years.sort()
-    return int(years[0])
-
-test_list = ['March 24, 1984', '1992', 'February 12, 1981']
-
-
-def release_date_normalisation(self, data_list):
+def release_date_normalisation(date_list):
     """
-    na stronie mamy podawane trzy rozne daty wydania (maksymalnie) EU US i JP
-    na ogol w formacie MIESIAC_SLOWNIE DZIEN, ROK
-    przyklad na gre nie wydana w US + na to, ze czasem data to jest sam ROK
-    https://howlongtobeat.com/game?id=9876
-
-    co trzeba zrobic:
-    pobrac jak najwiecej tych dat, sprawdzic czy sa pelne, uwzglednic tylko pelne, zapisac wczesniejsza
+    I assume that full date (with day and month, not year only) is more viable for data (which need to be considered in
+    future. That's why this function is prioritizing full date over year only, and first check if in date_list is any
+    full date if yes, it compares them, if no checks for year only dates, and compares them. If theres full date or
+    year only date I prefer to have None returned.
     """
-
+    years_only = []
+    full_dates = []
+    for x in date_list:
+        is_valid = check_if_date_is_fully_valid(x)
+        if is_valid:
+            a = convert_string_date_to_date_object(x)
+            full_dates.append(a)
+        else:
+            years_only.append(x)
+    if full_dates:
+        full_dates.sort()
+        return full_dates[0]
+    elif years_only:
+        years_only.sort()
+        return years_only[0]
+    else:
+        return None
