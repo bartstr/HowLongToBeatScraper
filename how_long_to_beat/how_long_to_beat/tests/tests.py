@@ -55,17 +55,17 @@ class TestParsers(unittest.TestCase):
         self.assertEqual(results, expected)
 
     def test_parse_game_data(self):
-        expected_game_name = ' Elden Ring '
-        expected_platforms = ''
-        expected_genres = ''
-        expected_developer = ''
-        expected_publisher = ''
-        expected_release_date = ''
-        expected_rating = ''
-        expected_main_story = ''
-        expected_main_plus_extras = ''
-        expected_completionist = ''
-        expected_main_styles = ''
+        expected_game_name = 'Elden Ring'
+        expected_platforms = ['PC', 'PlayStation 4', 'PlayStation 5', 'Xbox One', 'Xbox Series X/S']
+        expected_genres = ['Third-Person', 'Action', 'Open World', 'Role-Playing']
+        expected_developer = 'FromSoftware'
+        expected_publisher = 'Bandai Namco Entertainment'
+        expected_release_date = '2022-02-25'
+        expected_rating = 93
+        expected_main_story = 50
+        expected_main_plus_extras = 93
+        expected_completionist = 126
+        expected_all_styles = 100
         result = self.spider.parse_game_data(self.test_game_page_html)
         for i in result:
             self.assertEqual(i['name'], expected_game_name)
@@ -78,7 +78,7 @@ class TestParsers(unittest.TestCase):
             self.assertEqual(i['main_story'], expected_main_story)
             self.assertEqual(i['main_plus_extras'], expected_main_plus_extras)
             self.assertEqual(i['completionist'], expected_completionist)
-            self.assertEqual(i['main_styles'], expected_main_styles)
+            self.assertEqual(i['all_styles'], expected_all_styles)
 
 
 if __name__ == '__main__':
