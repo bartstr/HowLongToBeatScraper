@@ -6,14 +6,18 @@ import re
 import scrapy
 from scrapy.http import FormRequest, Request
 
+
 """
-from how_long_to_beat.how_long_to_beat.items import HowLongToBeatItem
-from how_long_to_beat.how_long_to_beat.utils.completion_time_utils import fraction_normalisation
-from how_long_to_beat.how_long_to_beat.utils.date_utils import release_date_normalisation
+Import atrocity below is caused pycharm import path difference between running live spider and scrap_tests.py module
 """
-from how_long_to_beat.items import HowLongToBeatItem
-from how_long_to_beat.utils.completion_time_utils import fraction_normalisation
-from how_long_to_beat.utils.date_utils import release_date_normalisation
+if __name__ != 'how_long_to_beat_spiders':
+    from how_long_to_beat.how_long_to_beat.items import HowLongToBeatItem
+    from how_long_to_beat.how_long_to_beat.utils.completion_time_utils import fraction_normalisation
+    from how_long_to_beat.how_long_to_beat.utils.date_utils import release_date_normalisation
+else:
+    from how_long_to_beat.items import HowLongToBeatItem
+    from how_long_to_beat.utils.completion_time_utils import fraction_normalisation
+    from how_long_to_beat.utils.date_utils import release_date_normalisation
 
 
 log_filename = os.path.join(Path(os.getcwd()).parent, 'logs', f'how_long_to_beat_{date.today()}.log')
@@ -26,8 +30,10 @@ logger.addHandler(file_handler)
 
 class HowLongToBeat(scrapy.Spider):
 
+    print(f'NAME: {__name__}')
+
     name = 'hltb_spider'
-    start_urls = [f'https://howlongtobeat.com/search_results?page={x}' for x in range(1, 3)]#3879
+    start_urls = [f'https://howlongtobeat.com/search_results?page={x}' for x in range(1, 3879)]
     domain = 'https://howlongtobeat.com'
 
     def start_requests(self):
@@ -56,7 +62,7 @@ class HowLongToBeat(scrapy.Spider):
         for link in games_internal_links:
             yield Request(f'{self.domain}/{link.get()}', self.parse_game_data)
 
-    def _name_parser(self, response):
+    def __name_parser(self, response):
         try:
             raw_name = \
             response.xpath('//div[@class="profile_header_game"]/div[contains(@class, "profile_header")]/text()').get()
@@ -66,7 +72,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap name at {response.url}. {e}')
 
-    def _platforms_parser(self, response):
+    def __platforms_parser(self, response):
         try:
             raw_platforms = response.xpath \
             ('//div[contains(@class, "profile_info")]/strong[contains(text(), "Platform")]/following-sibling::text()[2]'). \
@@ -76,7 +82,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap platforms at {response.url}. {e}')
 
-    def _genres_parser(self, response):
+    def __genres_parser(self, response):
         try:
             raw_genre = response.xpath(
                 '//div[contains(@class, "profile_info")]/strong[contains(text(), "Genre")]/following-sibling::text()[2]').get()
@@ -92,7 +98,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap genres at {response.url}. {e}')
 
-    def _developer_parser(self, response):
+    def __developer_parser(self, response):
         try:
             developer_raw = response.xpath(
                 '//div[contains(@class, "profile_info")]/strong[contains(text(), "Developer")]/following-sibling::text()[2]').get()
@@ -100,7 +106,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap developer at {response.url}. {e}')
 
-    def _publisher_parser(self, response):
+    def __publisher_parser(self, response):
         try:
             publisher_raw = response.xpath(
                 '//div[contains(@class, "profile_info")]/strong[contains(text(), "Publisher")]/following-sibling::text()[2]').get()
@@ -108,7 +114,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap publisher at {response.url}. {e}')
 
-    def _release_date_parser(self, response):
+    def __release_date_parser(self, response):
         try:
             release_dates_raw = response.xpath(
                 '//div[contains(@class, "profile_info")]/strong[contains(text(), "NA") or contains(text(), "EU") or contains(text(), "JP")]/following-sibling::text()[2]').getall()
@@ -121,7 +127,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap release date at {response.url}. {e}')
 
-    def _rating_parser(self, response):
+    def __rating_parser(self, response):
         try:
             rating_raw = response.xpath('//div[@class="profile_details"]//li[contains(text(), "Rating")]').get()
             rating = re.findall(r'\d+', rating_raw)
@@ -129,7 +135,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap rating at {response.url}. {e}')
 
-    def _main_story_parser(self, response):
+    def __main_story_parser(self, response):
         try:
             main_story_raw = response.xpath(
                 '//li[contains(@class, "short")]/*[contains(text(), "Main Story")]/following-sibling::div/text()').get()
@@ -137,7 +143,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap main story at {response.url}. {e}')
 
-    def _main_plus_extras_parser(self, response):
+    def __main_plus_extras_parser(self, response):
         try:
             main_plus_extras_raw = response.xpath(
                 '//li[contains(@class, "short")]/*[contains(text(), "Main + Extras")]/following-sibling::div/text()').get()
@@ -145,7 +151,7 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap main plus extras at {response.url}. {e}')
 
-    def _completionist_parser(self, response):
+    def __completionist_parser(self, response):
         try:
             completionist_raw = response.xpath(
                 '//li[contains(@class, "short")]/*[contains(text(), "Completionist")]/following-sibling::div/text()').get()
@@ -153,27 +159,27 @@ class HowLongToBeat(scrapy.Spider):
         except Exception as e:
             logger.warning(f'Failed to scrap completionist at {response.url}. {e}')
 
-    def _all_styles_parser(self, response):
+    def __all_styles_parser(self, response):
         try:
             all_styles_raw = response.xpath(
                 '//li[contains(@class, "short")]/*[contains(text(), "All Styles")]/following-sibling::div/text()').get()
             return fraction_normalisation(all_styles_raw)
         except Exception as e:
-            logger.warning(f'Failed to scrap developer at {response.url}. {e}')
+            logger.warning(f'Failed to scrap all styles at {response.url}. {e}')
 
     def parse_game_data(self, response):
         item = HowLongToBeatItem()
 
-        item['name'] = self._name_parser(response)
-        item['platforms'] = self._platforms_parser(response)
-        item['genres'] = self._genres_parser(response)
-        item['developer'] = self._developer_parser(response)
-        item['publisher'] = self._publisher_parser(response)
-        item['release_date'] = self._release_date_parser(response)
-        item['rating'] = self._rating_parser(response)
-        item['main_story'] = self._main_story_parser(response)
-        item['main_plus_extras'] = self._main_plus_extras_parser(response)
-        item['completionist'] = self._completionist_parser(response)
-        item['all_styles'] = self._all_styles_parser(response)
+        item['name'] = self.__name_parser(response)
+        item['platforms'] = self.__platforms_parser(response)
+        item['genres'] = self.__genres_parser(response)
+        item['developer'] = self.__developer_parser(response)
+        item['publisher'] = self.__publisher_parser(response)
+        item['release_date'] = self.__release_date_parser(response)
+        item['rating'] = self.__rating_parser(response)
+        item['main_story'] = self.__main_story_parser(response)
+        item['main_plus_extras'] = self.__main_plus_extras_parser(response)
+        item['completionist'] = self.__completionist_parser(response)
+        item['all_styles'] = self.__all_styles_parser(response)
 
         yield item
