@@ -43,4 +43,4 @@ To dump data to file start scraper with the following arguments (according to sc
 
 -o items.xml for xml file.
 
-Last actualization and scraping done 5th May 2022.
+Last actualization and scraping done 17th May 2022.
