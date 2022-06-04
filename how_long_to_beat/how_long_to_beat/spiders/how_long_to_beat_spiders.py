@@ -6,7 +6,6 @@ import re
 import scrapy
 from scrapy.http import FormRequest, Request
 
-
 """
 Import atrocity below is caused pycharm import path difference between running live spider and scrap_tests.py module
 """
@@ -19,7 +18,6 @@ else:
     from how_long_to_beat.utils.completion_time_utils import fraction_normalisation
     from how_long_to_beat.utils.date_utils import release_date_normalisation
 
-
 log_filename = os.path.join(Path(os.getcwd()).parent, 'logs', f'how_long_to_beat_{date.today()}.log')
 file_handler = logging.FileHandler(filename=log_filename, mode='a')
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s:%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -29,7 +27,6 @@ logger.addHandler(file_handler)
 
 
 class HowLongToBeat(scrapy.Spider):
-
     print(f'NAME: {__name__}')
 
     name = 'hltb_spider'
@@ -53,9 +50,13 @@ class HowLongToBeat(scrapy.Spider):
             'detail': '',
             'randomize': '0',
         }
+        headers = {'Content-Type': 'application/x-www-form-urlencoded',
+                   'Origin': 'https://howlongtobeat.com',
+                   'Referer': 'https://howlongtobeat.com',
+                   }
         for url in self.start_urls:
             logger.info(f'Crawling {url}.')
-            yield FormRequest(url=url, formdata=data, callback=self.parse_search_page, method='POST')
+            yield FormRequest(url=url, formdata=data, headers=headers, callback=self.parse_search_page, method='POST')
 
     def parse_search_page(self, response):
         games_internal_links = response.xpath('//h3[@class="shadow_text"]/a[@class="text_white"]/@href')
@@ -65,7 +66,8 @@ class HowLongToBeat(scrapy.Spider):
     def __name_parser(self, response):
         try:
             raw_name = \
-            response.xpath('//div[@class="profile_header_game"]/div[contains(@class, "profile_header")]/text()').get()
+                response.xpath(
+                    '//div[@class="profile_header_game"]/div[contains(@class, "profile_header")]/text()').get()
             name_without_trailing_and_leading_whitespaces = re.sub(r'^[\s]+|[\s]+$', '', raw_name)
             clean_name = re.sub(r'\s+', ' ', name_without_trailing_and_leading_whitespaces)
             return clean_name
@@ -75,8 +77,8 @@ class HowLongToBeat(scrapy.Spider):
     def __platforms_parser(self, response):
         try:
             raw_platforms = response.xpath \
-            ('//div[contains(@class, "profile_info")]/strong[contains(text(), "Platform")]/following-sibling::text()[2]'). \
-            get()
+                ('//div[contains(@class, "profile_info")]/strong[contains(text(), "Platform")]/following-sibling::text()[2]'). \
+                get()
             platforms = [x.strip() for x in raw_platforms.split(",")]
             return platforms
         except Exception as e:
